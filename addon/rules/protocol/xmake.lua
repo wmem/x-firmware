@@ -1,0 +1,6 @@
+rule("protocol")
+on_load(function(target)
+    local api = import("@self.api")
+    target:add("includedirs", api.include_dir())
+end)
+rule_end()

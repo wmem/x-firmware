@@ -1,6 +1,6 @@
 import("crc32", {rootdir = os.scriptdir()})
 
--- 字段顺序只描述线格式；C 定义由 addon/include/x_firmware 提供并互通验证。
+-- 字段顺序只描述线格式；C 定义由 modules/include/x_firmware 提供并互通验证。
 local layouts = {
     run = {magic = 0x464d524e, fields = {"version", "addr", "size"}, platform = true},
     upgrade = {magic = 0x464d5550,
