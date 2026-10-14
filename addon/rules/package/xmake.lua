@@ -1,5 +1,5 @@
 rule("package")
-on_after_build(function(target)
+after_build(function(target)
     import("core.package.addon")
     import("core.project.depend")
     import("core.base.json")
