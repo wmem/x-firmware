@@ -2,7 +2,7 @@
 
 xmake Addon，供 Boot、APP 和其他 xmake 脚本共享固件格式，并通过显式文件 API 制作完整及差分升级镜像。
 
-当前已实现共用 C 协议头、全部文件 API、纯 Lua LZ4/bsdiff、协议编解码、流式 CRC32、构建规则和命令入口。独立 C 算法互通已通过，真实 Addon 安装和消费集成正在验证；尚未发布版本。
+当前已实现共用 C 协议头、全部文件 API、纯 Lua LZ4/bsdiff、协议编解码、流式 CRC32、构建规则和命令入口。独立 C 算法互通、真实隔离 Addon 安装、API/规则/命令消费及增量行为均已通过；尚未发布版本标签。
 
 ## 协议和公开入口
 
@@ -54,6 +54,7 @@ local header = firmware.encode_header("run", {
 ```sh
 xmake l tests/protocol.lua
 xmake l tests/files.lua
+uv run --no-project --offline python tests/addon_integration.py
 ```
 
 需要现有 xmake、主机 cc、arm-none-eabi-gcc、uv Python 及测试用系统 liblz4，不自动安装工具。也可给测试函数显式传入仓库路径。检查包含 C 字段布局和五种格式互通、流式 CRC、错误输入拒绝、ARM 布局、26 组 Lua/C 双向 LZ4/bsdiff 互通、三类镜像恢复、中文空格路径、原位加头及失败输出保护。依赖来源及许可证见 [THIRD_PARTY](THIRD_PARTY.md)。
@@ -66,4 +67,4 @@ xmake l tests/files.lua
 xmake l scripts/prepare-addon.lua /path/to/new-payload /path/to/x-firmware
 ```
 
-载荷包含 addon.lua、modules、plugins 和 rules，C 包含文件和许可证作为 modules 的资源分发，不覆盖日常插件安装。隔离安装与固定提交分发验证仍在进行。
+载荷包含 addon.lua、modules、plugins 和 rules，C 包含文件和许可证作为 modules 的资源分发。addon_integration.py 从本地 Git 固定提交真实安装到独立 XMAKE_GLOBALDIR，验证导入、C 头及许可证、协议及打包规则、命令入口、正常增量、参数变更、缺失产物恢复及消费程序运行，不覆盖日常插件安装。
