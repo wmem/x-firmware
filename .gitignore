@@ -1,0 +1,4 @@
+/build/
+/.xmake/
+/.agent/
+__pycache__/
