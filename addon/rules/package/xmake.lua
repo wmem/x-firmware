@@ -25,10 +25,12 @@ after_build(function(target)
     for _, filename in ipairs(os.files(path.join(modules, "*.lua"))) do files[#files + 1] = filename end
     table.sort(files)
     local output = path.absolute(config.output, root)
+    local values = {"x-firmware-0.1.0", stable(config)}
+    for _, filename in ipairs(files) do values[#values + 1] = tostring(os.filesize(filename) or -1) end
     depend.on_changed(function()
         api.execute(config.operation, config, root)
     end, {dependfile = target:dependfile(output), files = files,
-          values = {"x-firmware-0.1.0", stable(config)},
+          values = values,
           changed = target:is_rebuilt() or not os.isfile(output), lastmtime = os.mtime(output)})
 end)
 rule_end()

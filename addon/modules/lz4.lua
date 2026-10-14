@@ -45,6 +45,7 @@ function compress(data)
 end
 
 function decompress(data, size)
+    assert(type(data) == "string" and #data >= 1, "LZ4 raw block 至少包含一个 token")
     assert(type(size) == "number" and size >= 0 and size % 1 == 0, "LZ4 输出长度无效")
     local output, cursor = {}, 1
     local function byte()

@@ -137,6 +137,8 @@ function diff(old, new)
 end
 
 function patch(old, patchdata, size)
+    assert(type(old) == "string" and type(patchdata) == "string" and type(size) == "number"
+           and size >= 0 and size % 1 == 0, "bspatch 参数无效")
     local output, cursor, oldpos = {}, 1, 0
     local function take(count)
         assert(count >= 0 and count % 1 == 0 and cursor + count - 1 <= #patchdata, "bsdiff 数据截断")
