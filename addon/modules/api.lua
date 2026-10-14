@@ -51,8 +51,8 @@ local function platform_info(run, info)
            "支持平台列表不能为空")
     assert(platform:sub(1, 1) ~= ";" and platform:sub(-1) ~= ";" and not platform:find(";;", 1, true),
            "支持平台列表有空项")
-    assert(type(identifier) == "string" and #identifier > 0 and #identifier <= 15,
-           "identifier 必须为 1..15 字节")
+    assert(type(identifier) == "string" and #identifier <= 15,
+           "identifier 最多为 15 字节")
     return identifier, platform
 end
 

@@ -75,6 +75,9 @@ function main(project_root)
     assert(not pcall_raw(function() api.fill_run_header(newfile, protected, {version = 3, addr = 0x08004000,
         identifier = "TOO_LONG_IDENTIFIER", platform = "VE_TEST"}, {header_capacity = 128}) end))
     assert(read("protected.bin") == "keep", "失败改变了已有输出")
+    api.fill_run_header(newfile, file("empty-id.bin"), {version = 3, addr = 0x08004000,
+        identifier = "", platform = "VE_TEST"}, {header_capacity = 128})
+    assert(api.inspect(file("empty-id.bin")).header.identifier == "", "空 identifier 不是平台准入条件")
     api.make_upgrade(newfile, protected)
     assert(api.inspect(protected).kind == "upgrade", "已有输出覆盖失败")
     assert(not pcall_raw(function() api.make_upgrade(newfile, file("empty"), {platform = ""}) end))

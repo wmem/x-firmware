@@ -31,6 +31,9 @@ on_test(function(package)
 end)
 package_end()
 ''')
+if os.environ.get("FIRMWARE_ADDON_REPOSITORY"):
+    # 验证真实分发配方，不修改外部索引的源码或提交号。
+    repo = Path(os.environ["FIRMWARE_ADDON_REPOSITORY"]).resolve()
 env = os.environ.copy()
 env["XMAKE_GLOBALDIR"] = str(globaldir)
 env["XMAKE_COLORTERM"] = "nocolor"
@@ -86,6 +89,7 @@ response = run("xmake", "l", "-c", 'local a=import("@addon.x-firmware.api"); pri
 assert "include" in response
 run("xmake", "run", "consumer")
 (base / "result.json").write_text(json.dumps({"status": "PASS", "source_commit": version,
+    "repository": str(repo), "globaldir": str(globaldir),
     "checks": ["真实隔离安装", "C 头及许可证分发", "API 导入", "协议规则", "文件打包规则", "正常增量",
                "缺失产物恢复", "参数变化重打包", "命令入口", "消费程序运行"]}, ensure_ascii=False, indent=2))
 print("PASS: Addon 真实隔离安装、API/规则/命令及增量行为，提交", version)
