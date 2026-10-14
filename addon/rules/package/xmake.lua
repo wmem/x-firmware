@@ -1,4 +1,15 @@
 rule("package")
+-- JSON table 的遍历顺序可能跨进程变化；依赖值使用排序后的显式文本，避免误重建。
+local function stable(value)
+    if type(value) ~= "table" then
+        return import("core.base.json").encode(value)
+    end
+    local keys, parts = {}, {}
+    for key, _ in pairs(value) do keys[#keys + 1] = key end
+    table.sort(keys, function(a, b) return type(a) .. tostring(a) < type(b) .. tostring(b) end)
+    for _, key in ipairs(keys) do parts[#parts + 1] = "[" .. stable(key) .. "]=" .. stable(value[key]) end
+    return "{" .. table.concat(parts, ";") .. "}"
+end
 after_build(function(target)
     import("core.package.addon")
     import("core.project.depend")
@@ -19,7 +30,7 @@ after_build(function(target)
     depend.on_changed(function()
         api.execute(config.operation, config, root)
     end, {dependfile = target:dependfile(output), files = files,
-          values = {"x-firmware-0.1.0", json.encode(config)},
+          values = {"x-firmware-0.1.0", stable(config)},
           changed = target:is_rebuilt() or not os.isfile(output), lastmtime = os.mtime(output)})
 end)
 rule_end()
