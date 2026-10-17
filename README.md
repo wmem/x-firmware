@@ -2,7 +2,7 @@
 
 xmake Addon，供 Boot、APP 和其他 xmake 脚本共享固件格式，并通过显式文件 API 制作完整及差分升级镜像。
 
-当前已实现共用 C 协议头、全部文件 API、纯 Lua LZ4/bsdiff、协议编解码、流式 CRC32、构建规则和命令入口。独立 C 算法互通、真实隔离 Addon 安装、API/规则/命令消费及增量行为均已通过。源码与 Addon 采用同一版本号 0.1.0，分发配方固定对应源码提交。
+当前已实现共用 C 协议头、全部文件 API、纯 Lua LZ4/bsdiff、协议编解码、流式 CRC32、构建规则和命令入口。独立 C 算法互通、真实隔离 Addon 安装、API/规则/命令消费及增量行为均已通过。源码与 Addon 采用同一版本号 0.2.0，分发配方固定对应源码提交。
 
 ## 安装
 
@@ -10,7 +10,7 @@ xmake Addon，供 Boot、APP 和其他 xmake 脚本共享固件格式，并通�
 
 ```lua
 add_repositories("wmem-xmake-addon git@github.com:wmem/xmake-addons.git")
-add_addons("x-firmware 0.1.0")
+add_addons("x-firmware 0.2.0")
 ```
 
 随后执行 `xmake f -y`，即可通过公开模块、规则和命令调用。安装不需要算法二进制、Python 或其他插件；本仓库的独立 C 互通测试另需现有主机编译器、系统 liblz4 和 uv/Python。
