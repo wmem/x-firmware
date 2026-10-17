@@ -23,6 +23,8 @@ C 入口为 [firmware.h](addon/modules/include/x_firmware/firmware.h) 和 [produ
 
 运行头按 1 KiB 对齐、升级包按 4 KiB 对齐，对齐不代表预留容量。identifier 最多 15 字节并以 NUL 结束，可为空；Boot 不以此标识判断平台支持。平台字符串以分号分隔，platform_len 包含末尾 NUL。底层编解码允许空平台字符串，用于解析或制作拒绝升级的测试数据；Boot 必须拒绝空支持列表。
 
+升级头在 dat_type 后紧跟 uint32_t type_arg；固定部分为64字节。RAW(dat_type=0)的参数固定为0，LZ4(dat_type=1)的参数是打包器允许的最大回溯距离（0..65535字节，0表示仅literals），不是压缩块长度，也不是字典位数。make_upgrade/compress_lz4 的 options.lz4_max_distance 限制压缩器产生的offset；完整包写入该配置上限，不扫描后改为实际最大值。inspect会解压检查声明；手动 add_header 给LZ4加头时必须显式传入type_arg并通过距离检查。Boot只需比较声明与自身能力，解压时继续检查边界。此次格式不兼容旧升级头，打包器和Boot必须一起更新；运行头、差分头及外层头不变。
+
 `image_head_encrypt_t` 及 magic 保留输入定义的命名；当前设计的 dat_crypto=0 代表 LZ4 外层封装，不表示提供加密。算法和有效性策略由后续打包 API 及 Boot 实现，协议编解码不代替安装准入检查。
 
 当前公开 [api.lua](addon/modules/api.lua) 提供 `include_dir()`、`encode_header(kind, info)`、`decode_header(bytes, offset)`、`encode_product(values)` 和 `decode_product(bytes, offset)`。返回头部字节或解析后的 table，错误通过 xmake 的错误机制报告，不读取 target、板描述或修改工作目录。
@@ -42,10 +44,10 @@ local header = firmware.encode_header("run", {
 | 函数 | 参数 |
 | --- | --- |
 | fill_run_header | input, output, info, options；必须显式指定 options.header_capacity |
-| make_upgrade | input, output, info, options；compression 默认 none，可设 lz4 |
+| make_upgrade | input, output, info, options；compression 默认 none，可设 lz4；lz4_max_distance 默认 65535 |
 | make_diff | oldfile, newfile, output, info, options；compression 默认 lz4，可设 none |
 | add_header | input, output, info, options；info.kind 为 upgrade/diff/encrypt |
-| compress_lz4 | input, output, info, options；输出 raw block |
+| compress_lz4 | input, output, info, options；输出 raw block；lz4_max_distance 默认 65535 |
 | diff_bsdiff | oldfile, newfile, output, info, options；输出未压缩交错补丁 |
 | inspect | input, options；校验头部和载荷，完整包还校验恢复结果 |
 | write_product | output, values, options；写入产品键值镜像 |
@@ -65,6 +67,7 @@ local header = firmware.encode_header("run", {
 ```sh
 xmake l tests/protocol.lua
 xmake l tests/files.lua
+xmake l tests/max_distance.lua
 uv run --no-project --offline python tests/addon_integration.py
 ```
 
@@ -79,3 +82,5 @@ xmake l scripts/prepare-addon.lua /path/to/new-payload /path/to/x-firmware
 ```
 
 载荷包含 addon.lua、modules、plugins 和 rules，C 包含文件和许可证作为 modules 的资源分发。addon_integration.py 从本地 Git 固定提交真实安装到独立 XMAKE_GLOBALDIR，验证导入、C 头及许可证、协议及打包规则、命令入口、正常增量、参数变更、缺失产物恢复及消费程序运行，不覆盖日常插件安装。
+
+2026-10-17 的 type_arg 变更通过 C/Lua 协议互通（含 ARM 布局）、26组文件/算法互通，以及7种距离上限(0/1/256/1000/16384/32768/65535)的独立liblz4交叉验证；错误参数和低报声明均拒绝。原始结果在 build/protocol、build/文件 API 空格和 build/max-distance；此处不代表 MCU 硬件已验证。

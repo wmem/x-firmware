@@ -12,7 +12,7 @@ function main(project_root)
     local samples = {
         run = {version = 7, addr = 0x08004000, size = 98304},
         upgrade = {addr = 0x08004000, size = 98304, crc = 0x11223344, version = 7,
-                   dat_size = 65432, dat_crc = 0xdeadbeef, dat_type = 1},
+                   dat_size = 65432, dat_crc = 0xdeadbeef, dat_type = 1, type_arg = 16384},
         diff = {src_addr = 0x08004000, src_size = 80000, src_crc = 0x10203040, src_version = 6,
                 dst_addr = 0x08004000, dst_size = 98304, dst_crc = 0x11223344, dst_version = 7,
                 dat_size = 50123, dat_crc = 0xdeadbeef},

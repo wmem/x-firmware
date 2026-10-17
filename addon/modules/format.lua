@@ -4,7 +4,7 @@ import("crc32", {rootdir = os.scriptdir()})
 local layouts = {
     run = {magic = 0x464d524e, fields = {"version", "addr", "size"}, platform = true},
     upgrade = {magic = 0x464d5550,
-        fields = {"addr", "size", "crc", "version", "dat_size", "dat_crc", "dat_type"}, platform = true},
+        fields = {"addr", "size", "crc", "version", "dat_size", "dat_crc", "dat_type", "type_arg"}, platform = true},
     diff = {magic = 0x464d4446,
         fields = {"src_addr", "src_size", "src_crc", "src_version", "dst_addr", "dst_size",
                   "dst_crc", "dst_version", "dat_size", "dat_crc"}, platform = true},

@@ -111,10 +111,12 @@ end
 
 function compress_lz4(input, output, info, options)
     local data = read_file(input)
-    local compressed = lz4.compress(data)
+    options = options or {}
+    local limit = lz4.max_distance(options.lz4_max_distance)
+    local compressed = lz4.compress(data, limit)
     write_file(output, compressed)
     return {path = path.absolute(output), size = #compressed, src_size = #data,
-            src_crc = crc32.sum(data), dat_crc = crc32.sum(compressed), backend = "lua"}
+            src_crc = crc32.sum(data), dat_crc = crc32.sum(compressed), type_arg = limit, backend = "lua"}
 end
 
 function diff_bsdiff(oldfile, newfile, output, info, options)
@@ -134,9 +136,16 @@ function add_header(input, output, info, options)
     local fields = table.clone(info)
     fields.dat_size, fields.dat_crc = #data, crc32.sum(data)
     if kind == "upgrade" and (fields.dat_type or 0) == 0 then
-        fields.size, fields.crc, fields.dat_type = #data, crc32.sum(data), 0
+        fields.size, fields.crc, fields.dat_type, fields.type_arg = #data, crc32.sum(data), 0, 0
     end
     if kind == "encrypt" then fields.dat_crypto = fields.dat_crypto or 0 end
+    if kind == "upgrade" then
+        assert(fields.dat_type == 0 or fields.dat_type == 1, "不支持升级数据算法")
+        if fields.dat_type == 1 then
+            fields.type_arg = lz4.max_distance(assert(fields.type_arg, "LZ4 加头必须声明 type_arg"))
+            lz4.decompress(data, assert(fields.size), fields.type_arg)
+        end
+    end
     local bytes = format.encode_header(kind, fields) .. data
     write_file(output, bytes)
     return metadata(output, bytes, format.decode_header(bytes))
@@ -149,9 +158,10 @@ function make_upgrade(input, output, info, options)
     local identifier, platform = platform_info(run, info)
     local mode = options.compression or "none"
     assert(mode == "none" or mode == "lz4", "compression 只支持 none/lz4")
-    local payload = mode == "lz4" and lz4.compress(data) or data
+    local limit = mode == "lz4" and lz4.max_distance(options.lz4_max_distance) or 0
+    local payload = mode == "lz4" and lz4.compress(data, limit) or data
     local head = {addr = run.addr, size = #data, crc = crc32.sum(data), version = run.version,
-                  dat_size = #payload, dat_crc = crc32.sum(payload), dat_type = mode == "lz4" and 1 or 0,
+                  dat_size = #payload, dat_crc = crc32.sum(payload), dat_type = mode == "lz4" and 1 or 0, type_arg = limit,
                   identifier = identifier, platform = platform}
     local bytes = format.encode_header("upgrade", head) .. payload
     write_file(output, bytes)
@@ -200,7 +210,8 @@ local function inspect_bytes(data)
         assert(result.inner.kind == "diff" or result.inner.kind == "upgrade", "外层内容类型错误")
     elseif header.kind == "upgrade" then
         assert(header.dat_type == 0 or header.dat_type == 1, "不支持升级数据算法")
-        local restored = header.dat_type == 1 and lz4.decompress(payload, header.size) or payload
+        assert(header.dat_type ~= 0 or header.type_arg == 0, "RAW type_arg 必须为 0")
+        local restored = header.dat_type == 1 and lz4.decompress(payload, header.size, header.type_arg) or payload
         assert(#restored == header.size and crc32.sum(restored) == header.crc, "完整固件 CRC 错误")
         local _, run = locate_run(restored, {}, true)
         assert(run.addr == header.addr and run.version == header.version, "升级头与 APP 信息不一致")

@@ -16,7 +16,16 @@ local function sequence(parts, literals, distance, length)
     end
 end
 
-function compress(data)
+-- 上限是压缩器承诺，独立于整块输入/输出长度；0 仅输出 literals。
+function max_distance(value)
+    value = value == nil and 65535 or value
+    assert(type(value) == "number" and value % 1 == 0 and value >= 0 and value <= 65535,
+           "LZ4 最大回溯距离必须为 0..65535 字节")
+    return value
+end
+
+function compress(data, limit)
+    limit = max_distance(limit)
     assert(type(data) == "string", "LZ4 输入必须为字节字符串")
     local parts, dictionary = {}, {}
     local anchor, cursor, size = 1, 1, #data
@@ -25,7 +34,7 @@ function compress(data)
         local key = data:sub(cursor, cursor + 3)
         local previous = dictionary[key]
         dictionary[key] = cursor
-        if previous and cursor - previous <= 65535 then
+        if previous and cursor - previous <= limit then
             local count = 4
             while cursor + count <= size - 5 and data:byte(previous + count) == data:byte(cursor + count) do
                 count = count + 1
@@ -44,7 +53,8 @@ function compress(data)
     return table.concat(parts)
 end
 
-function decompress(data, size)
+function decompress(data, size, limit)
+    limit = max_distance(limit)
     assert(type(data) == "string" and #data >= 1, "LZ4 raw block 至少包含一个 token")
     assert(type(size) == "number" and size >= 0 and size % 1 == 0, "LZ4 输出长度无效")
     local output, cursor = {}, 1
@@ -67,7 +77,7 @@ function decompress(data, size)
         for _ = 1, literals do output[#output + 1] = string.char(byte()) end
         if cursor > #data then break end
         local distance = byte() + byte() * 256
-        assert(distance > 0 and distance <= #output, "LZ4 offset 无效")
+        assert(distance > 0 and distance <= #output and distance <= limit, "LZ4 offset 无效")
         local count = length(token % 16) + 4
         assert(#output + count <= size, "LZ4 match 越界")
         for _ = 1, count do output[#output + 1] = output[#output - distance + 1] end

@@ -60,6 +60,7 @@ typedef struct image_head_upgrade {
     uint32_t dat_size;          /**< \brief 固件数据大小 */
     uint32_t dat_crc;           /**< \brief 固件数据CRC32 */
     uint32_t dat_type;          /**< \brief 固件数据格式，0:原始数据，1：LZ4压缩数据 */
+    uint32_t type_arg;          /**< \brief 类型参数：RAW 为 0，LZ4 为最大回溯距离(0..65535 字节) */
 
     char     identifier[16];    /**< \brief 固件标识(\0结尾) */
 

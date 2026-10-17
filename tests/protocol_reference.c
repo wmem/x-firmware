@@ -11,9 +11,10 @@ _Static_assert(sizeof(firmware_magic_t) == 12, "magic");
 _Static_assert(sizeof(image_head_run_t) == 44, "run");
 _Static_assert(offsetof(image_head_run_t, p_platform) == 44, "run platform");
 _Static_assert(offsetof(image_head_run_t, identifier) == 24, "run identifier");
-_Static_assert(sizeof(image_head_upgrade_t) == 60, "upgrade");
+_Static_assert(sizeof(image_head_upgrade_t) == 64, "upgrade");
 _Static_assert(offsetof(image_head_upgrade_t, dat_size) == 28, "upgrade data");
-_Static_assert(offsetof(image_head_upgrade_t, p_platform) == 60, "upgrade platform");
+_Static_assert(offsetof(image_head_upgrade_t, p_platform) == 64, "upgrade platform");
+_Static_assert(offsetof(image_head_upgrade_t, type_arg) == 40, "upgrade argument");
 _Static_assert(sizeof(image_head_diff_t) == 72, "diff");
 _Static_assert(offsetof(image_head_diff_t, dst_addr) == 28, "diff destination");
 _Static_assert(offsetof(image_head_diff_t, dat_size) == 44, "diff data");
@@ -84,7 +85,7 @@ int main(int argc, char **argv)
     firmware(argv[1], "run", &run, sizeof(run), p);
     image_head_upgrade_t up = {.magic.flag = FIRMWARE_MAGIC_IMAGE_UPGRADE,
         .addr = 0x08004000, .size = 98304, .crc = 0x11223344, .version = 7,
-        .dat_size = 65432, .dat_crc = 0xdeadbeef, .dat_type = FIRMWARE_DATA_LZ4,
+        .dat_size = 65432, .dat_crc = 0xdeadbeef, .dat_type = FIRMWARE_DATA_LZ4, .type_arg = 16384,
         .identifier = "sample"};
     firmware(argv[1], "upgrade", &up, sizeof(up), p);
     image_head_diff_t diff = {.magic.flag = FIRMWARE_MAGIC_IMAGE_DIFF,
