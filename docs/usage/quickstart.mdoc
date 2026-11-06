@@ -1,0 +1,38 @@
+{% section id="x-firmware:use:quickstart" title="安装与使用入口" %}
+
+{% section id="x-firmware:use:quickstart:install" title="安装" %}
+
+在消费工程的 xmake.lua 中声明：
+
+```lua {% process=false %}
+add_repositories("wmem-xmake-addon git@github.com:wmem/xmake-addons.git")
+add_addons("x-firmware 0.2.0")
+```
+
+随后执行 `xmake f -y`，即可通过公开模块、规则和命令调用。安装不需要算法二进制、Python 或其他插件；本仓库的独立 C 互通测试另需现有主机编译器、系统 liblz4 和 uv/Python。
+
+{% /section %}
+
+
+## 制作第一份产品信息镜像
+
+先用产品信息镜像验证文件链路，不需要连接板卡。在消费工程创建 product.json：
+
+```json {% process=false %}
+{
+  "output": "build/product.bin",
+  "values": {"platform": "EXAMPLE_BOARD", "serial": "demo-001"}
+}
+```
+
+执行：
+
+```sh {% process=false %}
+xmake x-firmware --config=product.json product
+```
+
+命令输出包含 path、size 和 values 的产物元数据，生成的 build/product.bin 路径相对 product.json；values 应包含示例的 platform 和 serial。需要在 Lua 中读取产品信息时，使用公开 API decode_product 解析文件字节。
+
+inspect 命令用于运行镜像、升级包、差分包与外层封装，不解析产品信息镜像。该示例验证产品信息格式，不代表 APP 或 Boot 已接入；运行镜像、升级包和差分包按[镜像制作流程](packaging.mdoc)准备输入。
+
+{% /section %}

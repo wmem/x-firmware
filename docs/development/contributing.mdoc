@@ -1,0 +1,43 @@
+{% section id="x-firmware:dev:contributing" title="开发与互通验证" %}
+
+{% section id="x-firmware:dev:contributing:checks" title="验证" %}
+
+在仓库根目录执行：
+
+```sh {% process=false %}
+xmake l tests/protocol.lua
+xmake l tests/files.lua
+xmake l tests/max_distance.lua
+uv run --no-project --offline python tests/addon_integration.py
+```
+
+需要现有 xmake、主机 cc、arm-none-eabi-gcc、uv Python 及测试用系统 liblz4，不自动安装工具。也可给测试函数显式传入仓库路径。
+
+检查包含 C 字段布局和五种格式互通、流式 CRC、错误输入拒绝、ARM 布局、26 组 Lua/C 双向 LZ4/bsdiff 互通、三类镜像恢复、中文空格路径、原位加头及失败输出保护。依赖来源及许可证见 [THIRD_PARTY](third-party.md)。
+
+2026-10-14 在 WSL、Xmake 3.1.1+HEAD.3ba37a0、ARM GCC 10.3.1 下以上协议及文件检查通过。
+
+代表性的 256 KiB 输入 bsdiff 约 8.4 秒，未压缩补丁 262172 字节，LZ4 后 2066 字节，因此采用纯 Lua 后端。原始样例和结果位于本地 build/protocol 和 build/文件 API 空格；这不代表 MCU 升级流程已经验证。
+
+准备独立载荷时，输出目录必须不存在：
+
+```sh {% process=false %}
+xmake l scripts/prepare-addon.lua /path/to/new-payload /path/to/x-firmware
+```
+
+载荷包含 addon.lua、modules、plugins 和 rules，C 包含文件和许可证作为 modules 的资源分发。addon_integration.py 从本地 Git 固定提交真实安装到独立 XMAKE_GLOBALDIR，验证导入、C 头及许可证、协议及打包规则、命令入口、正常增量、参数变更、缺失产物恢复及消费程序运行，不覆盖日常插件安装。
+
+2026-10-17 的 type_arg 变更通过 C/Lua 协议互通（含 ARM 布局）、26组文件/算法互通，以及7种距离上限(0/1/256/1000/16384/32768/65535)的独立liblz4交叉验证；错误参数和低报声明均拒绝。
+
+原始结果在 build/protocol、build/文件 API 空格和 build/max-distance；此处不代表 MCU 硬件已验证。
+
+{% /section %}
+
+
+## 文档维护
+
+正式首页为 docs/index.mdoc；使用教程与完整参考放在 usage/，实现、设计和验收放在 development/。新增主题时更新对应层 index 的概览或 directory-order，不维护全局文章清单。稳定 section ID 用于长期引用，历史记录说明日期、版本和适用范围。
+
+从仓库根运行 edoc validate、edoc outline --depth 1 和 edoc，检查生成页面的目录、跳转及阅读顺序。生成的 output/ 与 .edoc-build/ 不作为手工维护源。
+
+{% /section %}

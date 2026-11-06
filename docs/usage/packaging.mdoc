@@ -1,0 +1,21 @@
+{% section id="x-firmware:use:packaging" title="选择镜像制作流程" %}
+
+先[安装 Addon](quickstart.mdoc)，再按产物选择公开 API 或构建规则：
+
+{% relation-diagram id="x-firmware:reading:images" /%}
+
+完整包只需要新运行镜像，差分包需要新旧两份运行镜像。产品信息是独立的键值镜像，不经过这条 APP 流程。
+
+| 目标产物 | 入口 | 输入前提 |
+| --- | --- | --- |
+| 补全 APP 运行镜像 | fill_run_header / package operation=app | bin 已预留运行头容量 |
+| 完整升级包 | make_upgrade / operation=upgrade | 已补全的运行镜像 |
+| 差分升级包 | make_diff / operation=diff | 新旧两个已补全的运行镜像 |
+| 产品信息镜像 | write_product / operation=product | key=value 产品信息 |
+| 检查固件类文件 | inspect | 运行镜像、升级包、差分包或外层封装 |
+
+在 Xmake 脚本域导入 @addon.x-firmware.api。需要构建结束后制作镜像时使用 @addon/x-firmware/package；从命令调用时使用 xmake x-firmware --config=firmware.json <操作>。调用方式、参数、对齐、CRC 和压缩距离的精确定义都在[格式与 API 参考](reference/format-api.mdoc)。
+
+固件类产物制作完成后用 inspect 检查；产品信息镜像检查 product 返回的 values，或读取文件字节后使用 decode_product。再结合消费工程验证恢复及安装流程。打包器的协议或算法互通通过不表示 Boot、Flash 准入及 MCU 升级链路已验收。
+
+{% /section %}

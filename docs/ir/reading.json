@@ -1,0 +1,222 @@
+{
+  "objects": [
+    {
+      "id": "x-firmware:reading:images:raw",
+      "kind": "node",
+      "label": "预留运行头的 APP bin",
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    },
+    {
+      "id": "x-firmware:reading:images:run",
+      "kind": "node",
+      "label": "已补全的新运行镜像",
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    },
+    {
+      "id": "x-firmware:reading:images:full",
+      "kind": "node",
+      "label": "完整升级包",
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    },
+    {
+      "id": "x-firmware:reading:images:old",
+      "kind": "node",
+      "label": "已补全的旧运行镜像",
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    },
+    {
+      "id": "x-firmware:reading:images:diff",
+      "kind": "node",
+      "label": "差分升级包",
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "x-firmware:reading:images:edge:fill",
+      "kind": "connection",
+      "class": "数据流",
+      "label": "fill_run_header",
+      "endpoints": [
+        "x-firmware:reading:images:raw",
+        "x-firmware:reading:images:run"
+      ],
+      "direction": {
+        "sources": [
+          "x-firmware:reading:images:raw"
+        ],
+        "targets": [
+          "x-firmware:reading:images:run"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    },
+    {
+      "id": "x-firmware:reading:images:edge:full",
+      "kind": "connection",
+      "class": "数据流",
+      "label": "make_upgrade",
+      "endpoints": [
+        "x-firmware:reading:images:run",
+        "x-firmware:reading:images:full"
+      ],
+      "direction": {
+        "sources": [
+          "x-firmware:reading:images:run"
+        ],
+        "targets": [
+          "x-firmware:reading:images:full"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    },
+    {
+      "id": "x-firmware:reading:images:edge:new",
+      "kind": "connection",
+      "class": "数据流",
+      "label": "新版本",
+      "endpoints": [
+        "x-firmware:reading:images:run",
+        "x-firmware:reading:images:diff"
+      ],
+      "direction": {
+        "sources": [
+          "x-firmware:reading:images:run"
+        ],
+        "targets": [
+          "x-firmware:reading:images:diff"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    },
+    {
+      "id": "x-firmware:reading:images:edge:old",
+      "kind": "connection",
+      "class": "数据流",
+      "label": "旧版本",
+      "endpoints": [
+        "x-firmware:reading:images:old",
+        "x-firmware:reading:images:diff"
+      ],
+      "direction": {
+        "sources": [
+          "x-firmware:reading:images:old"
+        ],
+        "targets": [
+          "x-firmware:reading:images:diff"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    }
+  ],
+  "views": [
+    {
+      "id": "x-firmware:reading:images",
+      "kind": "architecture",
+      "label": "APP 到完整升级包或差分包",
+      "include": {
+        "objects": [
+          "x-firmware:reading:images:raw",
+          "x-firmware:reading:images:run",
+          "x-firmware:reading:images:full",
+          "x-firmware:reading:images:old",
+          "x-firmware:reading:images:diff"
+        ],
+        "relations": [
+          "x-firmware:reading:images:edge:fill",
+          "x-firmware:reading:images:edge:full",
+          "x-firmware:reading:images:edge:new",
+          "x-firmware:reading:images:edge:old"
+        ]
+      },
+      "layout": {
+        "direction": "TB",
+        "routing": "orthogonal",
+        "constraints": [
+          {
+            "type": "order",
+            "axis": "y",
+            "nodes": [
+              "x-firmware:reading:images:raw",
+              "x-firmware:reading:images:run",
+              "x-firmware:reading:images:full"
+            ],
+            "gap": 36
+          },
+          {
+            "type": "align",
+            "axis": "y",
+            "nodes": [
+              "x-firmware:reading:images:run",
+              "x-firmware:reading:images:old"
+            ]
+          },
+          {
+            "type": "align",
+            "axis": "y",
+            "nodes": [
+              "x-firmware:reading:images:full",
+              "x-firmware:reading:images:diff"
+            ]
+          },
+          {
+            "type": "order",
+            "axis": "x",
+            "nodes": [
+              "x-firmware:reading:images:run",
+              "x-firmware:reading:images:old"
+            ],
+            "gap": 80
+          },
+          {
+            "type": "order",
+            "axis": "x",
+            "nodes": [
+              "x-firmware:reading:images:full",
+              "x-firmware:reading:images:diff"
+            ],
+            "gap": 80
+          },
+          {
+            "type": "align",
+            "axis": "x",
+            "nodes": [
+              "x-firmware:reading:images:raw",
+              "x-firmware:reading:images:run",
+              "x-firmware:reading:images:full"
+            ]
+          },
+          {
+            "type": "align",
+            "axis": "x",
+            "nodes": [
+              "x-firmware:reading:images:old",
+              "x-firmware:reading:images:diff"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "file": "docs/usage/packaging.mdoc"
+      }
+    }
+  ]
+}

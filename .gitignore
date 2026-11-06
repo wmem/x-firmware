@@ -2,3 +2,7 @@
 /.xmake/
 /.agent/
 __pycache__/
+
+# edoc 生成产物
+/output/
+/.edoc-build/

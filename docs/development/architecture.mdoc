@@ -1,0 +1,7 @@
+{% section id="x-firmware:dev:architecture" title="架构与边界" %}
+
+[api.lua](sources.mdoc#x-firmware:source:addon:modules:api:lua) 提供公开文件操作；[format.lua](sources.mdoc#x-firmware:source:addon:modules:format:lua) 编解码协议头，[crc32.lua](sources.mdoc#x-firmware:source:addon:modules:crc32:lua)、[lz4.lua](sources.mdoc#x-firmware:source:addon:modules:lz4:lua) 与 [bsdiff.lua](sources.mdoc#x-firmware:source:addon:modules:bsdiff:lua) 负责算法。C 协议头在 [firmware.h](sources.mdoc#x-firmware:source:addon:modules:include:x_firmware:firmware:h) 和 [product.h](sources.mdoc#x-firmware:source:addon:modules:include:x_firmware:product:h) 维护。
+
+命令和 package 规则进入同一文件执行 API，保持相对路径、失败保护与增量边界一致。公开格式与字段见[格式参考](../usage/reference/format-api.mdoc)；修改协议或算法时按[开发与互通验证](contributing.mdoc)核对独立 C 实现及隔离安装。
+
+{% /section %}
